@@ -10,7 +10,7 @@ pipeline {
      stages{
         stage("Git Checkout"){
             steps{
-                git branch: 'master', changelog: false, poll: false, url: 'https://github.com/devops-with-Git/LoginWebAppApplicationWith-Docker.git'
+                git branch: 'master', changelog: false, poll: false, url: 'https://github.com/prashikk71-ai/WebAppApplicationWith-Dockek.git'
             }
         }
         stage("Compile"){
@@ -45,8 +45,8 @@ pipeline {
         script {
             withDockerRegistry(credentialsId: 'Docker-Hub', toolName: 'docker') {
                 sh """
-                docker build -t swapnilhub/loginwebappseven:latest .
-                docker push swapnilhub/loginwebappseven:latest
+                docker build -t janviprkk/loginwebappseven:latest .
+                docker push janviprkk/loginwebappseven:latest
                 """
             }
         }
@@ -54,7 +54,7 @@ pipeline {
 }
         stage("TRIVY"){
             steps{
-                sh "trivy image swapnilhub/loginwebappseven:latest > trivyimage.txt"
+                sh "trivy image janviprkk/loginwebappseven:latest > trivyimage.txt"
             }
         } 
         stage("Deploy using Docker container"){
