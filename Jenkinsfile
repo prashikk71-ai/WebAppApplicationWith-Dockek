@@ -70,7 +70,7 @@ post {
             body: "Project: ${env.JOB_NAME}<br/>" +
                 "Build Number: ${env.BUILD_NUMBER}<br/>" +
                 "URL: ${env.BUILD_URL}<br/>",
-            to: 'learn.with.aws.devops@gmail.com',  
+            to: 'prashikk71@gmail.com',  
             attachmentsPattern: 'trivyimage.txt'
         }
     }
