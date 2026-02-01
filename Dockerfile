@@ -13,7 +13,7 @@ RUN apt-get update && \
 
 WORKDIR $CATALINA_HOME
 
-COPY target/LoginWebAppApplicationWith-Docker.war webapps/ROOT.war
+COPY target/WebAppApplicationWith-Dockek.war webapps/ROOT.war
 
 EXPOSE 8080
 
