@@ -1,68 +1,80 @@
 pipeline {
     agent any
-    tools{
+
+    tools {
         jdk 'java-17'
         maven 'Maven3.9'
     }
+
     environment {
-        SCANNER_HOME=tool 'sonar-scanner'
+        SCANNER_HOME = tool 'sonar-scanner'
+        IMAGE_NAME = "prashikrk/loginwebappseven:latest"
     }
-     stages{
-        stage("Git Checkout"){
-            steps{
-                git branch: 'master', changelog: false, poll: false, url: 'https://github.com/prashikk71-ai/WebAppApplicationWith-Dockek.git'
+
+    stages {
+
+        stage("Git Checkout") {
+            steps {
+                git branch: 'master',
+                    url: 'https://github.com/prashikk71-ai/WebAppApplicationWith-Dockek.git'
             }
         }
-        stage("Compile"){
-            steps{
-                sh "mvn clean compile"
+
+        stage("Build & Test") {
+            steps {
+                sh "mvn clean verify"
             }
         }
-         stage("Test Cases"){
-            steps{
-                sh "mvn test"
-            }
-        }
-        stage('Sonarqube Analysis') {
+
+        stage("Sonarqube Analysis") {
             steps {
                 withSonarQubeEnv('sonar-server') {
-                    sh '''
-                      $SCANNER_HOME/bin/sonar-scanner \
-                      -Dsonar.projectName=Loginwebapp \
-                      -Dsonar.projectKey=Loginwebapp
-                    '''
+                    sh """
+                    $SCANNER_HOME/bin/sonar-scanner \
+                    -Dsonar.projectName=Loginwebapp \
+                    -Dsonar.projectKey=Loginwebapp \
+                    -Dsonar.sources=src \
+                    -Dsonar.java.binaries=target
+                    """
                 }
             }
         }
 
-        stage("Build war file"){
-            steps{
-                sh " mvn clean install"
+        stage("Build WAR") {
+            steps {
+                sh "mvn package"
             }
         }
-       stage("Docker Build and Push") {
-    steps {
-        script {
-            withDockerRegistry(credentialsId: 'Docker-Hub', toolName: 'docker') {
+
+        stage("Docker Build & Push") {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'prashikrk', toolName: 'docker') {
+                        sh """
+                        docker build -t $IMAGE_NAME .
+                        docker push $IMAGE_NAME
+                        """
+                    }
+                }
+            }
+        }
+
+        stage("Trivy Image Scan") {
+            steps {
+                sh "trivy image $IMAGE_NAME > trivyimage.txt"
+            }
+        }
+
+        stage("Deploy using Docker") {
+            steps {
                 sh """
-                docker build -t janviprkk/loginwebappseven:latest .
-                docker push janviprkk/loginwebappseven:latest
+                docker rm -f loginwebseven1 || true
+                docker run -d \
+                  --name loginwebseven1 \
+                  -p 8083:8080 \
+                  $IMAGE_NAME
                 """
             }
         }
     }
-}
-        stage("TRIVY"){
-            steps{
-                sh "trivy image janviprkk/loginwebappseven:latest > trivyimage.txt"
-            }
-        } 
-        stage("Deploy using Docker container"){
-            steps{
-                sh "docker run -d --name=loginwebseven1 -p 8083:8080 swapnilhub/loginwebappseven:latest"
-            }
-        }       
-}
-        
-    
 }
